@@ -7,16 +7,16 @@ resource "aws_codebuild_project" "tf-plan" {
     type = "CODEPIPELINE"
   }
 
-#   environment {
-#     compute_type                = "BUILD_GENERAL1_SMALL"
-#     image                       = "hashicorp/terraform:0.14.3"
-#     type                        = "LINUX_CONTAINER"
-#     image_pull_credentials_type = "SERVICE_ROLE"
-#     registry_credential {         
-#       credential          = var.dockerhub_credentials
-#       credential_provider = "SECRETS_MANAGER"
-#     }
-#   }
+  #   environment {
+  #     compute_type                = "BUILD_GENERAL1_SMALL"
+  #     image                       = "hashicorp/terraform:0.14.3"
+  #     type                        = "LINUX_CONTAINER"
+  #     image_pull_credentials_type = "SERVICE_ROLE"
+  #     registry_credential {         
+  #       credential          = var.dockerhub_credentials
+  #       credential_provider = "SECRETS_MANAGER"
+  #     }
+  #   }
   environment {
     compute_type                = "BUILD_GENERAL1_SMALL"
     image                       = "aws/codebuild/standard:1.0"
@@ -43,16 +43,16 @@ resource "aws_codebuild_project" "tf-apply" {
     type = "CODEPIPELINE"
   }
 
-#   environment {
-#     compute_type                = "BUILD_GENERAL1_SMALL"
-#     image                       = "hashicorp/terraform:0.14.3"
-#     type                        = "LINUX_CONTAINER"
-#     image_pull_credentials_type = "SERVICE_ROLE"
-#     registry_credential {
-#       credential          = var.dockerhub_credentials
-#       credential_provider = "SECRETS_MANAGER"
-#     }
-#   }
+  #   environment {
+  #     compute_type                = "BUILD_GENERAL1_SMALL"
+  #     image                       = "hashicorp/terraform:0.14.3"
+  #     type                        = "LINUX_CONTAINER"
+  #     image_pull_credentials_type = "SERVICE_ROLE"
+  #     registry_credential {
+  #       credential          = var.dockerhub_credentials
+  #       credential_provider = "SECRETS_MANAGER"
+  #     }
+  #   }
   environment {
     compute_type                = "BUILD_GENERAL1_SMALL"
     image                       = "aws/codebuild/standard:1.0"
@@ -84,16 +84,19 @@ resource "aws_codepipeline" "cicd_pipeline" {
   stage {
     name = "Source"
     action {
-      name             = "Source"
-      category         = "Source"
-      owner            = "AWS"
-      provider         = "CodeStarSourceConnection"
-      version          = "1"
-      output_artifacts = ["tf-code"]
+      name     = "Source"
+      category = "Source"
+      owner    = "AWS"
+      provider = "CodeStarSourceConnection"
+      version  = "1"
+        output_artifacts = ["tf-code"]
+    #   output_artifacts = ["source_output"]
       configuration = {
-        FullRepositoryId     = "davoclock/aws-cicd-pipeline"
-        BranchName           = "master"
-        ConnectionArn        = var.codestar_connector_credentials
+        FullRepositoryId = "thomasni91/aws-cicd-pipeline"
+        BranchName       = "master"
+        # ConnectionArn        = var.codestar_connector_credentials
+        ConnectionArn        = aws_codestarconnections_connection.example.arn
+
         OutputArtifactFormat = "CODE_ZIP"
       }
     }
@@ -102,14 +105,15 @@ resource "aws_codepipeline" "cicd_pipeline" {
   stage {
     name = "Plan"
     action {
-      name            = "Build"
-      category        = "Build"
-      provider        = "CodeBuild"
-      version         = "1"
-      owner           = "AWS"
-      input_artifacts = ["tf-code"]
+      name     = "Build"
+      category = "Build"
+      provider = "CodeBuild"
+      version  = "1"
+      owner    = "AWS"
+        input_artifacts = ["tf-code"]
+    #   input_artifacts = ["source_output"]
       configuration = {
-        ProjectName = "tf-cicd-plan"
+        ProjectName = "tf-cicd-plan2"
       }
     }
   }
@@ -129,4 +133,9 @@ resource "aws_codepipeline" "cicd_pipeline" {
     }
   }
 
+}
+
+resource "aws_codestarconnections_connection" "example" {
+  name          = "example-connection"
+  provider_type = "GitHub"
 }
