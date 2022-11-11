@@ -2,9 +2,11 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - terraform init
-      - terraform validate
+      # - terraform init
+      # - terraform validate
+      echo good
   
   build:
     commands:
-      - terraform plan
+      # - terraform plan
+      echo bye
