@@ -18,33 +18,75 @@ resource "aws_iam_role" "tf-codepipeline-role" {
 EOF
 }
 
-data "aws_iam_policy_document" "tf-cicd-pipeline-policies" {
-  statement {
-    sid       = ""
-    actions   = ["codestar-connections:UseConnection"]
-    resources = ["*"]
-    effect    = "Allow"
-  }
-  statement {
-    sid       = ""
-    actions   = ["cloudwatch:*", "s3:*", "codebuild:*"]
-    resources = ["*"]
-    effect    = "Allow"
-  }
-}
+# data "aws_iam_policy_document" "tf-cicd-pipeline-policies" {
+#   statement {
+#     sid       = ""
+#     actions   = ["codestar-connections:UseConnection"]
+#     resources = ["*"]
+#     effect    = "Allow"
+#   }
+#   statement {
+#     sid       = ""
+#     actions   = ["cloudwatch:*", "s3:*", "codebuild:*"]
+#     resources = ["*"]
+#     effect    = "Allow"
+#   }
+# }
 
-resource "aws_iam_policy" "tf-cicd-pipeline-policy" {
-  name        = "tf-cicd-pipeline-policy"
-  path        = "/"
-  description = "Pipeline policy"
-  policy      = data.aws_iam_policy_document.tf-cicd-pipeline-policies.json
-}
+# resource "aws_iam_policy" "tf-cicd-pipeline-policy" {
+#   name        = "tf-cicd-pipeline-policy"
+#   path        = "/"
+#   description = "Pipeline policy"
+#   policy      = data.aws_iam_policy_document.tf-cicd-pipeline-policies.json
+# }
 
-resource "aws_iam_role_policy_attachment" "tf-cicd-pipeline-attachment" {
-  policy_arn = aws_iam_policy.tf-cicd-pipeline-policy.arn
-  role       = aws_iam_role.tf-codepipeline-role.id
-}
+# resource "aws_iam_role_policy_attachment" "tf-cicd-pipeline-attachment" {
+#   policy_arn = aws_iam_policy.tf-cicd-pipeline-policy.arn
+#   role       = aws_iam_role.tf-codepipeline-role.id
+# }
 
+
+resource "aws_iam_role_policy" "codepipeline_policy" {
+  name = "codepipeline_policy"
+  role = aws_iam_role.tf-codepipeline-role.id
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect":"Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "s3:GetBucketVersioning",
+        "s3:PutObjectAcl",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "${aws_s3_bucket.codepipeline_artifacts.arn}",
+        "${aws_s3_bucket.codepipeline_artifacts.arn}/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codestar-connections:UseConnection"
+      ],
+      "Resource": "${aws_codestarconnections_connection.example.arn}"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codebuild:BatchGetBuilds",
+        "codebuild:StartBuild"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
 
 resource "aws_iam_role" "tf-codebuild-role" {
   name = "tf-codebuild-role"
