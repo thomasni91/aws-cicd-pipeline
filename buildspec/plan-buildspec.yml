@@ -2,8 +2,8 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      echo good
+      - echo good
   
   build:
     commands:
-      echo bye
+      - echo bye
