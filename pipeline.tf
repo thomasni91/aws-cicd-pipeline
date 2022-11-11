@@ -35,7 +35,7 @@ resource "aws_codebuild_project" "tf-plan" {
 }
 
 resource "aws_codebuild_project" "tf-apply" {
-  name         = "tf-cicd-apply"
+  name         = "tf-cicd-applysss"
   description  = "Apply stage for terraform"
   service_role = aws_iam_role.tf-codebuild-role.arn
 
