@@ -1,32 +1,11 @@
-resource "aws_codebuild_project" "tf-plan" {
-  name         = "tf-cicd-plan2"
-  description  = "Plan stage for terraform"
-  service_role = aws_iam_role.tf-codebuild-role.arn
 
-  artifacts {
-    type = "CODEPIPELINE"
-  }
-  environment {
-    compute_type                = "BUILD_GENERAL1_SMALL"
-    image                       = "aws/codebuild/standard:1.0"
-    type                        = "LINUX_CONTAINER"
-    image_pull_credentials_type = "CODEBUILD"
-  }
-  source {
-    type      = "CODEPIPELINE"
-    buildspec = file("buildspec/plan-buildspec.yml")
-  }
-}
 resource "aws_codepipeline" "cicd_pipeline" {
-
   name     = "tf-cicd"
   role_arn = aws_iam_role.tf-codepipeline-role.arn
-
   artifact_store {
     type     = "S3"
     location = aws_s3_bucket.codepipeline_artifacts.id
   }
-
   stage {
     name = "Source"
     action {
@@ -35,12 +14,11 @@ resource "aws_codepipeline" "cicd_pipeline" {
       owner    = "AWS"
       provider = "CodeStarSourceConnection"
       version  = "1"
-        output_artifacts = ["tf-code"]
-    #   output_artifacts = ["source_output"]
+      # output_artifacts = ["tf-code"]
+      output_artifacts = ["source_output"]
       configuration = {
-        FullRepositoryId = "thomasni91/quickfront"
-        BranchName       = "master"
-        # ConnectionArn        = var.codestar_connector_credentials
+        FullRepositoryId     = "thomasni91/quickfront"
+        BranchName           = "master"
         ConnectionArn        = aws_codestarconnections_connection.example.arn
         OutputArtifactFormat = "CODE_ZIP"
       }
@@ -55,16 +33,39 @@ resource "aws_codepipeline" "cicd_pipeline" {
       provider = "CodeBuild"
       version  = "1"
       owner    = "AWS"
-        input_artifacts = ["tf-code"]
-    #   input_artifacts = ["source_output"]
+      # input_artifacts = ["tf-code"]
+      input_artifacts  = ["source_output"]
+      output_artifacts = ["BuildArtifact"]
       configuration = {
         ProjectName = "tf-cicd-plan2"
       }
     }
   }
+  stage {
+    name = "Deploy"
+    action {
+      name     = "Deploy"
+      category = "Deploy"
+      owner    = "AWS"
+      provider = "S3"
+      # input_artifacts = ["build_output"]
+      input_artifacts = ["BuildArtifact"]
+      # input_artifacts = ["SourceArtifact"]
+      # input_artifacts = ["source_output"]
+
+      version = "1"
+      configuration = {
+        # ActionMode     = "REPLACE_ON_FAILURE"
+        # Capabilities   = "CAPABILITY_AUTO_EXPAND,CAPABILITY_IAM"
+        # OutputFileName = "CreateStackOutput.json"
+        # StackName      = "35MiddleFE"
+        # TemplatePath   = "build_output::sam-templated.yaml"
+        BucketName = aws_s3_bucket.codepipeline_artifacts.bucket
+        # BucketName      = "pipeline-artifacts-sheng"
+
+        Extract = "true"
+      }
+    }
+  }
 }
 
-resource "aws_codestarconnections_connection" "example" {
-  name          = "example-connection"
-  provider_type = "GitHub"
-}
