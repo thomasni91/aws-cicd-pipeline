@@ -119,7 +119,7 @@ resource "aws_codepipeline" "cicd_pipeline" {
   }
 
   stage {
-    name = "Deploy"
+    name = "good"
     action {
       name            = "Deploy"
       category        = "Build"
