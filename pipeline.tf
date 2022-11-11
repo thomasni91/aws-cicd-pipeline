@@ -30,12 +30,12 @@ resource "aws_codebuild_project" "tf-plan" {
   }
   source {
     type      = "CODEPIPELINE"
-    buildspec = file("buildspec/aa.yml")
+    buildspec = file("buildspec/plan-buildspec.yml")
   }
 }
 
 resource "aws_codebuild_project" "tf-apply" {
-  name         = "tf-cicd-applysss"
+  name         = "tf-cicd-apply"
   description  = "Apply stage for terraform"
   service_role = aws_iam_role.tf-codebuild-role.arn
 
@@ -66,7 +66,7 @@ resource "aws_codebuild_project" "tf-apply" {
   }
   source {
     type      = "CODEPIPELINE"
-    buildspec = file("buildspec/aa.yml")
+    buildspec = file("buildspec/apply-buildspec.yml")
   }
 }
 

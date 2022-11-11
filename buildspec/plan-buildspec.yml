@@ -2,8 +2,8 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo good
+      - echo good plan
   
   build:
     commands:
-      - echo bye
+      - echo bye plan
