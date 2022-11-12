@@ -3,8 +3,9 @@ resource "aws_codepipeline" "cicd_pipeline" {
   name     = "tf-cicd"
   role_arn = aws_iam_role.tf-codepipeline-role.arn
   artifact_store {
-    type     = "S3"
+    type = "S3"
     location = aws_s3_bucket.codepipeline_artifacts.id
+    # location = aws_s3_bucket.www.id
   }
   stage {
     name = "Source"
@@ -26,7 +27,7 @@ resource "aws_codepipeline" "cicd_pipeline" {
   }
 
   stage {
-    name = "Plan"
+    name = "build"
     action {
       name     = "Build"
       category = "Build"
@@ -52,7 +53,6 @@ resource "aws_codepipeline" "cicd_pipeline" {
       input_artifacts = ["BuildArtifact"]
       # input_artifacts = ["SourceArtifact"]
       # input_artifacts = ["source_output"]
-
       version = "1"
       configuration = {
         # ActionMode     = "REPLACE_ON_FAILURE"
@@ -60,9 +60,8 @@ resource "aws_codepipeline" "cicd_pipeline" {
         # OutputFileName = "CreateStackOutput.json"
         # StackName      = "35MiddleFE"
         # TemplatePath   = "build_output::sam-templated.yaml"
-        BucketName = aws_s3_bucket.codepipeline_artifacts.bucket
-        # BucketName      = "pipeline-artifacts-sheng"
-
+        # BucketName = aws_s3_bucket.codepipeline_artifacts.bucket
+        BucketName = aws_s3_bucket.www.bucket
         Extract = "true"
       }
     }

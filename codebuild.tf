@@ -11,10 +11,18 @@ resource "aws_codebuild_project" "tf-plan" {
     image                       = "aws/codebuild/standard:5.0"
     type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "CODEBUILD"
+    environment_variable {
+      name  = "REACT_APP_API_URL"
+      value = "prod-url:REACT_APP_API_URL"
+      type  = "SECRETS_MANAGER"
+    }
   }
   source {
     type      = "CODEPIPELINE"
-    buildspec = file("buildspec/plan-buildspec.yml")
+    # buildspec = file("buildspec/plan-buildspec.yml")
+    # type            = "GITHUB"
+    location        = "https://github.com/thomasni91/quickfront.git"
+    git_clone_depth = 1
   }
 }
 
